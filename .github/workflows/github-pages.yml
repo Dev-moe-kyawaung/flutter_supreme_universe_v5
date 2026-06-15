@@ -1,28 +1,49 @@
-name: Deploy GitHub Pages
+name: Deploy to GitHub Pages
+
 on:
   push:
-    branches: [main]
+    branches: [main, master]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
-      - run: flutter pub get
-      - run: flutter build web --release
-      - uses: actions/upload-pages-artifact@v3
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
-      - id: deployment
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Deployment Success
+        run: echo "🚀 Deployed to GitHub Pages!"
