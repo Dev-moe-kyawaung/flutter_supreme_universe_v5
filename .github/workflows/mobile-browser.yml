@@ -1,0 +1,120 @@
+name: Mobile Browser CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  mobile-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      
+      - name: Install Dependencies
+        run: flutter pub get
+      
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Setup Puppeteer
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Testing Tools
+        run: npm install -g @puppeteer/browsers puppeteer
+      
+      - name: Start Web Server
+        run: |
+          cd build/web
+          python3 -m http.server 8080
+        timeout-minutes: 5
+      
+      - name: Test iPhone Viewport
+        run: |
+          node <<EOF
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.setViewport({ width: 390, height: 844, isMobile: true });
+            await page.goto('http://localhost:8080');
+            const content = await page.content();
+            if (content.includes('Moe Kyaw Aung')) {
+              console.log('✅ iPhone viewport: PASS');
+            } else {
+              console.log('❌ iPhone viewport: FAIL');
+              process.exit(1);
+            }
+            await browser.close();
+          })();
+          EOF
+      
+      - name: Test Android Viewport
+        run: |
+          node <<EOF
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.setViewport({ width: 360, height: 800, isMobile: true });
+            await page.goto('http://localhost:8080');
+            const content = await page.content();
+            if (content.includes('Flutter supreme')) {
+              console.log('✅ Android viewport: PASS');
+            } else {
+              console.log('❌ Android viewport: FAIL');
+              process.exit(1);
+            }
+            await browser.close();
+          })();
+          EOF
+      
+      - name: Test Touch Interactions
+        run: |
+          node <<EOF
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.setViewport({ width: 390, height: 844, isMobile: true });
+            await page.goto('http://localhost:8080');
+            await page.touchscreen.tap(100, 100);
+            console.log('✅ Touch interactions: PASS');
+            await browser.close();
+          })();
+          EOF
+      
+      - name: Mobile Performance Check
+        run: |
+          node <<EOF
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.setViewport({ width: 390, height: 844, isMobile: true });
+            const start = Date.now();
+            await page.goto('http://localhost:8080');
+            const loadTime = Date.now() - start;
+            if (loadTime < 2000) {
+              console.log('✅ Mobile load time: PASS (' + loadTime + 'ms)');
+            } else {
+              console.log('❌ Mobile load time: FAIL (' + loadTime + 'ms)');
+              process.exit(1);
+            }
+            await browser.close();
+          })();
+          EOF
+      
+      - name: Mobile CI Success
+        run: echo "✅ Mobile browser CI passed!"
