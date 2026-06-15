@@ -1,23 +1,41 @@
-name: Android APK
+name: Build Android APK
+
 on:
   push:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
-      - uses: actions/setup-java@v4
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Install Dependencies
+        run: flutter pub get
+      
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
+          name: android-apk-release
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      
+      - name: APK Success
+        run: echo "📱 Android APK built!"
