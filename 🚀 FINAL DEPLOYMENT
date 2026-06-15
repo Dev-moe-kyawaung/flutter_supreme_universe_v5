@@ -1,0 +1,21 @@
+# 1. Create project
+flutter create flutter_supreme_universe_v5
+cd flutter_supreme_universe_v5
+
+# 2. Copy all files above
+
+# 3. Get dependencies
+flutter pub get
+
+# 4. Run
+flutter run -d chrome
+
+# 5. Build
+flutter build web --release
+flutter build apk --release
+flutter build ios --release
+
+# 6. Deploy
+git add .
+git commit -m "Flutter Supreme Universe V5 Complete"
+git push origin main
