@@ -1,19 +1,59 @@
-name: CI
+name: CI Pipeline
+
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
-      - run: flutter pub get
-      - run: flutter analyze
-      - run: flutter test
-      - run: flutter build web --release
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      
+      - name: Install Dependencies
+        run: flutter pub get
+      
+      - name: Code Analysis
+        run: flutter analyze
+      
+      - name: Format Check
+        run: flutter format --set-exit-if-changed lib/
+      
+      - name: Run Unit Tests
+        run: flutter test
+      
+      - name: Run Widget Tests
+        run: flutter test test/widget_tests/
+      
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 5
+      
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      
+      - name: CI Success
+        run: echo "✅ CI Pipeline passed!"
