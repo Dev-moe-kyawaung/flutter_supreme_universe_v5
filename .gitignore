@@ -1,10 +1,54 @@
+# Flutter/Dart
 .dart_tool/
 .packages
 build/
 .gitignore
-*.iml
-*.log
+*.app
+*.class
+*.dylib
+*.exe
+*.jar
+*.o
 *.pub
-.idea/
+*.swp
+.classpath
+.project
+.settings/
+android/app/src/main/java/
+android/build.gradle
+android/gradle.properties
+android/local.properties
+ios/Flutter/
+ios/Pods/
+*.xcuserstatus
+*.xcscmblueprint
+*.moved-aside
+*.derived
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# IDE
 .vscode/
+.idea/
+*.iml
+*.xcuserstate
+*.code-workspace
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Environment
+.env
+.local
+
+# Logs
+*.log
+logs/
+
+# Generated
+web/flutter.js
+web/flutter_service_worker.js
+web/version.json
